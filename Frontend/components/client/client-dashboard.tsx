@@ -408,7 +408,9 @@ export default function ClientsDashboard() {
                       </div>
                       <div className="ml-3">
                         <div className="font-medium text-gray-900">
-                          {client.name}
+                          {client.name.length > 23
+                            ? client.name.slice(0, 23) + "..."
+                            : client.name}
                         </div>
                         <div className="text-xs text-gray-500">
                           Added on{" "}
