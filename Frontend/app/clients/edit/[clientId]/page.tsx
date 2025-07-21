@@ -161,7 +161,7 @@ const EditClientPage = () => {
         id: clientId,
         type: (clientType as ClientType) || undefined,
         updatedAt: new Date().toISOString(),
-        logo: null,
+        logo: "",
         projects: [],
       };
 
