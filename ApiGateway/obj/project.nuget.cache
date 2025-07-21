@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "dgSpecHash": "iAIAsWw7yeY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Ons Khiari\\OneDrive\\Documents\\GitHub\\Projectmanagement-EY-Backend\\ApiGateway\\ApiGateway.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.bcl.memory\\9.0.0\\microsoft.bcl.memory.9.0.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0\\microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.7.0\\microsoft.identitymodel.abstractions.8.7.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.7.0\\microsoft.identitymodel.jsonwebtokens.8.7.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.logging\\8.7.0\\microsoft.identitymodel.logging.8.7.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.0.3\\microsoft.identitymodel.protocols.7.0.3.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.0.3\\microsoft.identitymodel.protocols.openidconnect.7.0.3.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.7.0\\microsoft.identitymodel.tokens.8.7.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.7.0\\system.identitymodel.tokens.jwt.8.7.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\system.io.hashing\\8.0.0\\system.io.hashing.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ons Khiari\\.nuget\\packages\\yarp.reverseproxy\\2.3.0\\yarp.reverseproxy.2.3.0.nupkg.sha512"
+  ],
+  "logs": []
+}

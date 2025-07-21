@@ -1,0 +1,181 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('GITHUB') {
+            steps {
+                git branch: 'main', credentialsId: 'github-private', url: 'https://github.com/ons-khiari/ProjectManagement-EY-Fullproject-with-Devops.git'
+            }
+        }
+        
+        
+        stage('SonarQube: Api Gateway') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('ApiGateway') {
+                        sh '''
+                            export PATH="$PATH:$HOME/.dotnet/tools"
+                            dotnet sonarscanner begin /k:"ey-apigateway" /d:sonar.login=$SONAR_AUTH_TOKEN
+                            dotnet build
+                            dotnet sonarscanner end /d:sonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+        
+        
+        stage('SonarQube: User Service') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('UserService') {
+                        sh '''
+                            export PATH="$PATH:$HOME/.dotnet/tools"
+                            dotnet nuget locals all --clear
+                            dotnet sonarscanner begin /k:"user-service" /d:sonar.login=$SONAR_AUTH_TOKEN
+                            dotnet build
+                            dotnet sonarscanner end /d:sonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+        
+        
+        stage('SonarQube: Project Service') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('ProjectmanagementService') {
+                        sh '''
+                            export PATH="$PATH:$HOME/.dotnet/tools"
+                            dotnet nuget locals all --clear
+                            dotnet sonarscanner begin /k:"project-service" /d:sonar.login=$SONAR_AUTH_TOKEN
+                            dotnet build
+                            dotnet sonarscanner end /d:sonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+
+        stage('SonarQube: Frontend') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('Frontend') {
+                        sh '''
+                            docker run --rm -v "$PWD":/app -w /app node:20-alpine sh -c "
+                                npm install --legacy-peer-deps &&
+                                npm run build --no-lint
+                            "
+                            docker run --rm -v "$PWD":/usr/src -w /usr/src sonarsource/sonar-scanner-cli \
+                                -Dsonar.projectKey=frontend \
+                                -Dsonar.host.url=http://host.docker.internal:9000 \
+                                -Dsonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+
+        stage('Docker Image: API Gateway') {
+            steps {
+                dir('ApiGateway') {
+                    sh 'docker build -t onskhiari/api-gateway:latest .'
+                }
+            }
+        }
+
+
+        stage('Docker Image: User Service') {
+            steps {
+                dir('UserService') {
+                    sh 'docker build -t onskhiari/user-service:latest .'
+                }
+            }
+        }
+
+
+        stage('Docker Image: Project Service') {
+            steps {
+                dir('ProjectmanagementService') {
+                    sh 'docker build -t onskhiari/project-service:latest .'
+                }
+            }
+        }
+
+
+        stage('Docker Image: Frontend') {
+            steps {
+                dir('Frontend') {
+                    sh 'docker build -t onskhiari/frontend:latest .'
+                }
+            }
+        }
+
+
+        stage('Security Scan: Docker Images with Trivy') {
+            steps {
+                sh '''
+                    echo "🔐 Pulling Trivy image..."
+                    docker pull aquasec/trivy:latest
+
+                    echo "🔍 Scanning API Gateway..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image onskhiari/api-gateway:latest || exit 1
+
+                    echo "🔍 Scanning User Service..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image onskhiari/user-service:latest || exit 1
+
+                    echo "🔍 Scanning Project Service..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image onskhiari/project-service:latest || exit 1
+
+                    echo "🔍 Scanning Frontend..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image onskhiari/frontend:latest || exit 1
+                '''
+            }
+        }
+
+
+        stage('Unit Tests: User Service') {
+            steps {
+                dir('UserService') {
+                    sh 'dotnet test'
+                }
+            }
+        }
+        
+        
+        stage('Unit Tests: Project Service') {
+            steps {
+                dir('ProjectmanagementService') {
+                    sh 'dotnet test'
+                }
+            }
+        }
+
+        
+        // stage('Push Docker Images to Docker Hub') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        //             sh '''
+        //                 set -e  # Fail the script if any command fails
+        //                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        //                 docker push onskhiari/api-gateway:latest
+        //                 docker push onskhiari/user-service:latest
+        //                 docker push onskhiari/project-service:latest
+        //                 docker push onskhiari/frontend:latest
+        //             '''
+        //         }
+        //     }
+        // }
+
+    
+        stage('Docker Compose') {
+            steps {
+                sh 'docker-compose down -v'
+                sh 'docker-compose up --build'
+            }
+        }
+    }
+}

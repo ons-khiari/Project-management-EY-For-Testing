@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    restart: unless-stopped
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: projectdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # User Microservice
+  user-service:
+    build: ./UserService
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Username=postgres;Password=1234;Database=projectdb
+      - KAFKA_BROKER=kafka:9092
+    restart: unless-stopped
+
+  # Project Management Microservice
+  project-service:
+    build: ./ProjectmanagementService
+    ports:
+      - "5002:5002"
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Username=postgres;Password=1234;Database=projectdb
+      - KAFKA_BROKER=kafka:9092
+    restart: unless-stopped
+
+  # API Gateway (.NET with YARP)
+  api-gateway:
+    build: ./ApiGateway
+    ports:
+      - "5185:5185"
+    depends_on:
+      - user-service
+      - project-service
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build: ./Frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api-gateway:5185
+    restart: unless-stopped
+
+volumes:
+  pgdata:
